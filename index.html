@@ -132,7 +132,7 @@
 <body>
 <div class="wrap">
   <h1>抛开 Title，<br>如果用<span class="nb">“思维方式”</span>对设计师的工作进行分类</h1>
-  <div class="subrow"><p class="sub">每一次转型都是一次“换脑”</p><div class="ctl"><div class="yr"><input type="range" id="yr" min="0" max="4" step="0.02" value="0" aria-label="年份"><div class="yl" id="yl"></div></div><button id="reset" type="button">重置</button></div></div>
+  <div class="subrow"><p class="sub">每一次转型都是一次“换脑”</p><div class="ctl"><div class="yr"><input type="range" id="yr" min="0" max="4" step="0.02" value="3" aria-label="年份"><div class="yl" id="yl"></div></div><button id="reset" type="button">重置</button></div></div>
 
   <svg id="chart" viewBox="0 0 900 470" role="group"
        aria-label="五种思维方式的强度曲线：发散创意、分析推理、整合故事、执行质量、系统思维。拖动圆点可以改变高低"></svg>
@@ -175,7 +175,7 @@
   ];
   var orig = eras.map(function (e) { return e.v.slice(); });     // 预设：重置时回到这里
   var saved = orig.map(function (v) { return v.slice(); });      // 点“保存”确认过的值
-  var cur = 0, vals = eras[0].v;                                 // 当前年份和它的（拖动中的）值
+  var cur = 3, vals = eras[3].v;                                 // 当前年份和它的（拖动中的）值
 
   function el(n, a, p) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
 
@@ -313,7 +313,7 @@
     justSaved = false; clearTimeout(savedTimer); refreshBtn();
   }
   // 点轨道会让原生滑块瞬间跳位：这种“跳”用 220ms 缓出补间走过去；拖动或键盘微调（变化小）仍然实时跟手
-  var yrLast = 0, yrAnim = 0;
+  var yrLast = 3, yrAnim = 0;
   function scrub() {
     cancelAnimationFrame(raf);
     var t = +yr.value; yrLast = t; setEra(Math.round(t));
@@ -436,7 +436,7 @@
     if (e.key === 'ArrowLeft') select(Math.max(0, sel - 1));
   });
 
-  yl.children[0].classList.add('on');
+  yl.children[cur].classList.add('on');
   draw();
   select(0);
   refreshBtn();
