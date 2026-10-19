@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>抛开 Title，如果用“思维方式”对设计师的工作进行分类</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<!-- Noto Serif SC 网页字体（按字切片，只下载用到的字）；样式表异步加载，不阻塞首屏；离线时回退到系统宋体 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/400.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/600.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/700.css" media="print" onload="this.media='all'">
+<noscript>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/400.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/600.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/700.css">
+</noscript>
+<style>
+  :root {
+    --paper:oklch(0.943 0.021 81.8); --grid:oklch(0.879 0.032 84.6); --slip:oklch(0.973 0.018 89.4); --slip-line:oklch(0.851 0.037 86.2);
+    --ink:oklch(0.313 0.049 267.5); --text:oklch(0.351 0.014 76.4); --muted:oklch(0.503 0.025 83.2); --red:oklch(0.57 0.171 32.6); --red-text:oklch(0.497 0.154 33.3);
+    --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","STSong",serif;
+    --ease:cubic-bezier(0.23,1,0.32,1);
+  }
+  * { box-sizing:border-box; }
+  html, body { margin:0; }
+  body { color:var(--text); font-family:var(--serif); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; font-synthesis:none;
+    background-color:var(--paper);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:24px 24px; background-position:12px 8px;
+    padding:36px max(16px, env(safe-area-inset-right)) calc(56px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); display:grid; place-items:start center; min-height:100vh; position:relative; }
+  body::before { content:""; position:absolute; top:0; bottom:0; left:max(12px, calc(50% - 500px)); width:2px; background:oklch(0.57 0.171 32.6 / .42); }
+  .wrap { width:100%; max-width:920px; position:relative; }
+  ::selection { background:oklch(0.57 0.171 32.6 / .22); }
+  .nb { white-space:nowrap; }
+  h1 { font-size:36px; font-weight:700; line-height:1.2; letter-spacing:.01em; margin:0 0 10px; color:var(--ink); transform:rotate(-.4deg); transform-origin:left; text-wrap:balance; }
+  .sub { font-size:15px; color:var(--muted); margin:0 0 14px; line-height:1.7; max-width:44em; }
+
+  svg { display:block; width:100%; height:auto; overflow:visible; }
+  svg text { font-family:var(--serif); }
+  .axis { stroke:var(--ink); stroke-width:2; stroke-opacity:.75; }
+  .guide { stroke:oklch(0.604 0.026 79.6); stroke-opacity:.35; stroke-width:1; stroke-dasharray:3 6; }
+  .end { font-size:14px; fill:var(--muted); }
+  .area { fill:oklch(0.313 0.049 267.5 / .055); }
+  .curve { fill:none; stroke:var(--ink); stroke-width:3.4; stroke-linecap:round; stroke-linejoin:round; }
+  .curve2 { fill:none; stroke:var(--ink); stroke-width:1.2; stroke-opacity:.5; stroke-linecap:round; transform:translateY(1.3px); }
+
+  .col { cursor:pointer; outline:none; }
+  .col .hit { fill:transparent; }
+  /* 当前这一项的标记：名字下面一道红色手画线 */
+  .col .ul { fill:none; stroke:var(--red); stroke-width:2.2; stroke-linecap:round; opacity:0; transition:opacity 150ms var(--ease); }
+  .col.on .ul, .col:focus-visible .ul { opacity:1; }
+  .col .grab { fill:transparent; cursor:grab; touch-action:none; r:24px; }
+  .col.drag .grab { cursor:grabbing; }
+  .col .dotin { transform-box:fill-box; transform-origin:center; transition:transform 150ms var(--ease); }
+  .col.on .dotin { transform:scale(1.25); }
+  .col.drag .dotin { transform:scale(1.5); }
+  .col .ring { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; }
+  .col .wash { fill:oklch(0.853 0.018 264.5); opacity:.55; transition:fill 150ms var(--ease); }       /* 平时是灰蓝水彩 */
+  .col.on .wash { fill:oklch(0.822 0.062 41.1); opacity:.7; }                                           /* 当前点染朱砂 */
+  .col .name { font-size:20px; font-weight:700; fill:var(--ink); text-anchor:middle; }
+  .col .en { font-size:13px; fill:var(--muted); text-anchor:middle; letter-spacing:.02em; }
+  .col .name-s { display:none; }
+  /* 纯装饰的图层不接收鼠标事件，免得盖在圆点的抓取区上抢点击；图上的字也不让选中 */
+  .area, .curve, .curve2, .guide, .axis, .ann, .col .ul, .col .ring, .col .wash, .col .name, .col .en { pointer-events:none; }
+  svg text, .card { user-select:none; -webkit-user-select:none; }
+  .ann { transition:opacity 200ms var(--ease); }
+  .ann path { fill:none; stroke:var(--red); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .ann text { font-size:18px; font-weight:600; fill:var(--red-text); paint-order:stroke; stroke:var(--paper); stroke-width:6px; stroke-linejoin:round; }
+
+  /* 五个能力的描述：五张纸条 */
+  .cards { display:flex; align-items:stretch; gap:12px; flex-wrap:wrap; margin:24px 0 0; }
+  .card { flex:1 1 150px; text-align:left; padding:12px 12px 13px; position:relative; --r:0deg; font:inherit; color:inherit; cursor:pointer;
+    background:var(--slip); border:1px solid var(--slip-line); border-radius:0; transform:rotate(var(--r));
+    transition:background 150ms var(--ease), transform 150ms var(--ease); }
+  .card:nth-child(odd) { --r:-.5deg; } .card:nth-child(even) { --r:.4deg; }
+  .card .nm { display:block; font-size:16px; font-weight:700; line-height:1.3; color:var(--ink); }
+  .card .ds { display:block; margin-top:7px; font-size:14px; line-height:1.65; color:var(--text); text-wrap:pretty; }
+  .card[aria-pressed="true"] { background:oklch(0.983 0.021 88.7); border-color:var(--red); }
+  .card[aria-pressed="true"] .nm { color:var(--red-text); }
+  .card[aria-pressed="true"]::after { content:""; position:absolute; left:50%; top:-8px; width:58px; height:16px; margin-left:-29px; background:oklch(0.57 0.171 32.6 / .28); transform:rotate(-3deg); pointer-events:none; }
+  .card:active { transform:rotate(var(--r)) scale(.96); }
+  @media (hover:hover) and (pointer:fine) { .card:not([aria-pressed="true"]):hover { background:oklch(0.983 0.021 88.7); } }
+
+  button { font:400 14px var(--serif); color:var(--ink); background:transparent; border:1.5px solid var(--ink); border-radius:0; padding:6px 14px; min-height:40px; cursor:pointer;
+    transition:background 150ms var(--ease), transform 150ms var(--ease); }
+  .card { font:inherit; }
+  @media (hover:hover) and (pointer:fine) { #reset:hover { background:oklch(0.313 0.049 267.5 / .07); } }
+  button:active { transform:scale(.96); }
+  button:focus-visible { outline:2px solid var(--red); outline-offset:2px; }
+  button:disabled { cursor:default; pointer-events:none; }
+  #reset:disabled { color:oklch(0.517 0.02 81.3); border-style:dashed; border-color:oklch(0.517 0.02 81.3); }
+  #reset.primary { background:var(--ink); color:var(--paper); }
+  .subrow { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 14px; }
+  .subrow .sub { margin:0; }
+  #reset { min-width:72px; flex:none; }
+  .ctl { display:flex; align-items:flex-start; gap:44px; flex:none; }
+  .yr { width:240px; }   /* 两端的年份标签会探出滑块约 20px，所以和按钮之间留 44px */
+  .yr input { -webkit-appearance:none; appearance:none; display:block; width:100%; height:44px; margin:0; background:transparent; cursor:pointer; touch-action:pan-y; }   /* 整条 44px 高都能按住拖，竖着滑还能滚页面 */
+  .yr input::-webkit-slider-runnable-track { height:2px; background:var(--ink); opacity:.75; }
+  .yr input::-moz-range-track { height:2px; background:var(--ink); }
+  .yr input::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; margin-top:-10px; border-radius:50%; background:oklch(0.822 0.062 41.1); border:2px solid var(--ink); transition:transform 150ms var(--ease); }
+  .yr input::-moz-range-thumb { width:14px; height:14px; border-radius:50%; background:oklch(0.822 0.062 41.1); border:2px solid var(--ink); }
+  .yr input:active::-webkit-slider-thumb { transform:scale(1.2); }
+  .yl { display:flex; justify-content:space-between; margin:-10px -4px 0; font-size:13px; color:var(--muted); }
+  .yl span { width:0; display:flex; justify-content:center; white-space:nowrap; transition:color 150ms var(--ease); }
+  .yl span.on { color:var(--red-text); }
+
+  /* 思维方式的介绍：一段 */
+  .intro { margin:20px 0 0; max-width:44em; }
+  .intro p { margin:0; font-size:15px; line-height:1.8; white-space:pre-line; text-wrap:pretty; }
+  .swap { animation:swap 180ms var(--ease) both; }
+  @keyframes swap { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+
+  @media (max-width:760px) {
+    .subrow { flex-wrap:wrap; } .ctl { width:100%; gap:34px; padding-left:22px; } .yr { flex:1; min-width:0; width:auto; }
+    body::before { left:6px; }
+    h1 { font-size:28px; }
+    /* 图整体按宽度等比缩小，窄屏时把图内文字和线条放大，保证读得清 */
+    .col .name-f, .col .en { display:none; }
+    .col .name-s { display:block; font-size:28px; transform:translateY(10px); }
+    .col .ul { transform:translateY(16px); stroke-width:3.2; }
+    .end { font-size:20px; }
+    .curve { stroke-width:5.5; } .curve2 { stroke-width:2; }
+    .col .ring { stroke-width:3.4; }
+    .col .grab { r:52px; }   /* 图缩到约 0.42 倍，抓取区放大到手指能抓住（直径约 44px） */
+    .col .dotin { transform:scale(1.7); } .col.on .dotin { transform:scale(2.1); } .col.drag .dotin { transform:scale(2.4); }
+    .ann text { font-size:26px; stroke-width:9px; } .ann path { stroke-width:3.4; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>抛开 Title，<br>如果用<span class="nb">“思维方式”</span>对设计师的工作进行分类</h1>
+  <div class="subrow"><p class="sub">每一次转型都是一次“换脑”</p><div class="ctl"><div class="yr"><input type="range" id="yr" min="0" max="4" step="0.02" value="0" aria-label="年份"><div class="yl" id="yl"></div></div><button id="reset" type="button">重置</button></div></div>
+
+  <svg id="chart" viewBox="0 0 900 470" role="group"
+       aria-label="五种思维方式的强度曲线：发散创意、分析推理、整合故事、执行质量、系统思维。拖动圆点可以改变高低"></svg>
+
+  <div class="cards" id="cards" role="group" aria-label="五种思维方式"></div>
+
+  <div class="intro" aria-live="polite"><p id="introP"></p></div>
+</div>
+
+<script>
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = document.getElementById('chart');
+  var X0 = 110, STEP = 170, BASE = 380, H = 300, LEFT = 40, RIGHT = 860;
+
+  // 五种思维方式：能力的描述(desc)放在纸条上，思维方式的介绍(intro)放在下面那一段
+  var types = [
+    { zh: '发散创意', en: 'Generate ideas',
+      desc: '追求创意、精通软件、很快但很浅的执行',
+      intro: '先出大量粗糙、不成熟的想法，不断冒灵感。然后学各种软件，实现出来。做出来的东西可能确实效果炫酷，可一问“为什么这么设计？”，可能讲不出来。做多了，大脑会变懒、思考会变浅。' },
+    { zh: '分析推理', en: 'Connect the dots',
+      desc: '开始要求懂商业、要会分析推理，但会做不会说',
+      intro: '用主观的方式描述客观世界：把数据、用户研究、竞品分析等等这些研究串起来，找出相关或因果关系。很考验短时记忆、抽象思考和逻辑推理，非常消耗脑力。执行的深度也增加了，不再只是表层，开始有更复杂的需求。可是做得很扎实，会做不会说，职场上很吃亏' },
+    { zh: '整合故事', en: 'Form narratives',
+      desc: '既要会做，更要会说，要沟通说服',
+      intro: '把零散信息整合成一个讲得通的故事，用来说服他人，影响他人行为。\n应该有分析推理做支撑；如果没有，就变成夸夸其谈打嘴炮，或者给出泯然众人的方案。' },
+    { zh: '执行质量', en: 'Execute within constraints',
+      desc: '在限制中做复杂决策',
+      intro: '难的是在限制中做复杂决策。限制 = 这也不行那也不行，复杂 = 主干 + 分支 + 逆向。做多了，思维会变严密，但也会固化 / 僵化。' },
+    { zh: '系统思维', en: 'Think in systems',
+      desc: '用系统思维和方法做执行',
+      intro: '常见的是做设计系统、写代码、写 skill。这类工作不太需要考虑用户和商业层面的问题，本质上是做工程。' }
+  ];
+  var eras = [
+    { y: '~2015', v: [80, 0, 0, 30, 0] },
+    { y: '~2018', v: [80, 50, 10, 50, 0] },
+    { y: '~2023', v: [70, 65, 65, 65, 20] },
+    { y: '~2026', v: [63, 65, 65, 85, 90] },
+    { y: 'Future', v: [63, 65, 65, 85, 90] }   // 未来先复制 ~2026，由你来拖
+  ];
+  var orig = eras.map(function (e) { return e.v.slice(); });     // 预设：重置时回到这里
+  var saved = orig.map(function (v) { return v.slice(); });      // 点“保存”确认过的值
+  var cur = 0, vals = eras[0].v;                                 // 当前年份和它的（拖动中的）值
+
+  function el(n, a, p) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
+
+  // ---------- 曲线：单调三次插值 + 手绘抖动 ----------
+  function slopes(pts) {
+    var n = pts.length, d = [], m = [], i;
+    for (i = 0; i < n - 1; i++) d[i] = (pts[i + 1][1] - pts[i][1]) / (pts[i + 1][0] - pts[i][0]);
+    m[0] = d[0]; m[n - 1] = d[n - 2];
+    for (i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+    for (i = 0; i < n - 1; i++) {
+      if (d[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
+      var a = m[i] / d[i], b = m[i + 1] / d[i], s = a * a + b * b;
+      if (s > 9) { var t = 3 / Math.sqrt(s); m[i] = t * a * d[i]; m[i + 1] = t * b * d[i]; }
+    }
+    return m;
+  }
+  function sample(pts, per) {
+    per = per || 20;
+    var m = slopes(pts), out = [], i, k;
+    for (i = 0; i < pts.length - 1; i++) {
+      var x0 = pts[i][0], y0 = pts[i][1], x1 = pts[i + 1][0], y1 = pts[i + 1][1], dx = x1 - x0;
+      var c1 = [x0 + dx / 3, y0 + m[i] * dx / 3], c2 = [x1 - dx / 3, y1 - m[i + 1] * dx / 3];
+      for (k = 0; k < per; k++) {
+        var t = k / per, u = 1 - t;
+        out.push([u * u * u * x0 + 3 * u * u * t * c1[0] + 3 * u * t * t * c2[0] + t * t * t * x1,
+                  u * u * u * y0 + 3 * u * u * t * c1[1] + 3 * u * t * t * c2[1] + t * t * t * y1]);
+      }
+    }
+    out.push(pts[pts.length - 1]);
+    return out;
+  }
+  function wob(x, amp, s) { return amp * (Math.sin(x * 0.047 + s) * 0.62 + Math.sin(x * 0.121 + s * 2.3) * 0.38); }
+  function handD(pts, amp, seed) {
+    var d = '';
+    for (var i = 0; i < pts.length; i++) d += (i ? 'L' : 'M') + pts[i][0].toFixed(1) + ' ' + (pts[i][1] + wob(pts[i][0], amp, seed)).toFixed(1) + ' ';
+    return d;
+  }
+  function handCircle(r, seed) {   // 没封口的手绘圆，以原点为中心
+    var d = '', N = 36, sweep = Math.PI * 2 * 1.12, a0 = seed * 1.7;
+    for (var i = 0; i <= N; i++) {
+      var a = a0 + sweep * i / N, rr = r * (1 + 0.07 * Math.sin(a * 2 + seed) + 0.04 * (i / N));
+      d += (i ? 'L' : 'M') + (rr * Math.cos(a)).toFixed(1) + ' ' + (rr * Math.sin(a)).toFixed(1) + ' ';
+    }
+    return d;
+  }
+  function ptsOf(v) {
+    var p = v.map(function (x, i) { return [X0 + i * STEP, BASE - x / 100 * H]; });
+    p.unshift([LEFT, p[0][1]]); p.push([RIGHT, p[p.length - 1][1]]);   // 两端延伸到坐标轴边缘
+    return p;
+  }
+
+  // ---------- 画布 ----------
+  el('line', { x1: LEFT, y1: BASE, x2: RIGHT, y2: BASE, class: 'axis' }, svg);
+  el('text', { x: 14, y: BASE - H / 2, class: 'end', 'text-anchor': 'middle', transform: 'rotate(-90 14 ' + (BASE - H / 2) + ')' }, svg).textContent = '要求越强 →';
+  types.forEach(function (t, i) { el('line', { x1: X0 + i * STEP, y1: 70, x2: X0 + i * STEP, y2: BASE, class: 'guide' }, svg); });
+
+  var area = el('path', { class: 'area' }, svg);
+  var curve = el('path', { class: 'curve' }, svg);
+  var curve2 = el('path', { class: 'curve2' }, svg);
+
+  var items = types.map(function (t, i) {
+    var cx = X0 + i * STEP;
+    var g = el('g', { class: 'col', tabindex: 0, role: 'slider', 'aria-label': t.zh + '（' + t.en + '）', 'aria-orientation': 'vertical', 'aria-valuemin': 0, 'aria-valuemax': 100 }, svg);
+    el('rect', { class: 'hit', x: cx - 70, y: 60, width: 140, height: BASE - 60 + 70 }, g);
+    var dotG = el('g', {}, g);
+    var inner = el('g', { class: 'dotin' }, dotG);
+    el('ellipse', { class: 'wash', rx: 17, ry: 15, cx: 2, cy: 2, transform: 'rotate(' + (i * 23) + ')' }, inner);
+    el('path', { class: 'ring', d: handCircle(9, i + 1) }, inner);
+    var grab = el('circle', { class: 'grab', cx: cx, cy: BASE, r: 24 }, g);   // 比圆点大的隐形抓取区
+    el('text', { class: 'name name-f', x: cx, y: BASE + 42 }, g).textContent = t.zh;
+    el('text', { class: 'name name-s', x: cx, y: BASE + 42 }, g).textContent = ['创意', '分析', '故事', '执行', '系统'][i];
+    el('text', { class: 'en', x: cx, y: BASE + 67 }, g).textContent = t.en;
+    var u = []; for (var q = 0; q <= 12; q++) u.push([cx - 38 + q * 6.33, BASE + 49]);
+    el('path', { class: 'ul', d: handD(u, 1.1, i + 3) }, g);
+    return { g: g, dotG: dotG, grab: grab, cx: cx };
+  });
+
+  // 手写提示：拖动圆点。第一次拖动之后就不再出现
+  var ann = el('g', { class: 'ann' }, svg);
+  var annPath = el('path', {}, ann), annHead = el('path', {}, ann), annTxt = el('text', {}, ann);
+  var hintGone = false;
+  function placeAnn() {
+    var i = sel, x = X0 + i * STEP, y = BASE - vals[i] / 100 * H;
+    var right = x > 640, left = x < 240, tx = right ? x + 14 : left ? x - 14 : x, ty = y - 74;
+    annTxt.setAttribute('x', tx); annTxt.setAttribute('y', ty);
+    annTxt.setAttribute('text-anchor', right ? 'end' : left ? 'start' : 'middle');
+    annTxt.textContent = '拖动圆点，定自己的高低';
+    var sx = right ? tx - 36 : left ? tx + 36 : tx, sy = ty + 10, ex = x, ey = y - 18, dir = right ? -1 : 1;
+    annPath.setAttribute('d', 'M' + sx + ' ' + sy + ' C' + (sx + dir * 26) + ' ' + (sy + 8) + ' ' + ex + ' ' + (ey - 26) + ' ' + ex + ' ' + ey);   // 末端控制点正上方：线垂直落进箭头中线
+    annHead.setAttribute('d', 'M' + (ex - 8) + ' ' + (ey - 11) + ' L' + ex + ' ' + ey + ' L' + (ex + 8) + ' ' + (ey - 11));
+    ann.style.opacity = hintGone ? 0 : 1;
+  }
+
+  // ---------- 状态 ----------
+  var sel = 0, hover = -1, raf = 0, justSaved = false, savedTimer = null;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var shown = vals.slice();
+
+  function draw() {
+    var s = sample(ptsOf(shown)), d = handD(s, 1.5, 2);
+    curve.setAttribute('d', d);
+    curve2.setAttribute('d', handD(s, 1.5, 2.4));
+    area.setAttribute('d', d + 'L' + RIGHT + ' ' + BASE + ' L' + LEFT + ' ' + BASE + ' Z');
+    items.forEach(function (it, i) {
+      var y = BASE - shown[i] / 100 * H;
+      it.dotG.setAttribute('transform', 'translate(' + it.cx + ' ' + y + ')');
+      it.grab.setAttribute('cy', y);
+      it.g.setAttribute('aria-valuenow', Math.round(shown[i]));
+    });
+    placeAnn();
+  }
+  function tweenTo(target) {          // 只在“重置”时用，约 0.3 秒
+    cancelAnimationFrame(raf);
+    if (reduce) { shown = target.slice(); draw(); return; }
+    var from = shown.slice(), t0 = performance.now(), DUR = 300;
+    (function step(now) {
+      var k = Math.min(1, (now - t0) / DUR); k = 1 - Math.pow(1 - k, 3);
+      shown = from.map(function (v, i) { return v + (target[i] - v) * k; });
+      draw();
+      if (k < 1) raf = requestAnimationFrame(step);
+    })(t0);
+  }
+
+  // ---------- 年份滑块 ----------
+  var yr = document.getElementById('yr'), yl = document.getElementById('yl');
+  eras.forEach(function (e) { var sp = document.createElement('span'); sp.textContent = e.y; yl.appendChild(sp); });
+  function blend(t) {                 // 两个相邻年份之间连续插值，滑块拖到哪，曲线就在哪
+    var a = Math.min(eras.length - 2, Math.floor(t)), k = t - a;
+    return eras[a].v.map(function (v, i) { return v + (eras[a + 1].v[i] - v) * k; });
+  }
+  function setEra(i) {                // 当前“最近的年份”：决定拖点、保存、重置作用在哪一个年份
+    if (i === cur) return;
+    cur = i; vals = eras[cur].v;
+    [].forEach.call(yl.children, function (sp, k) { sp.classList.toggle('on', k === cur); });
+    justSaved = false; clearTimeout(savedTimer); refreshBtn();
+  }
+  // 点轨道会让原生滑块瞬间跳位：这种“跳”用 220ms 缓出补间走过去；拖动或键盘微调（变化小）仍然实时跟手
+  var yrLast = 0, yrAnim = 0;
+  function scrub() {
+    cancelAnimationFrame(raf);
+    var t = +yr.value; yrLast = t; setEra(Math.round(t));
+    shown = blend(t); draw();
+  }
+  yr.addEventListener('input', function () {
+    cancelAnimationFrame(yrAnim);
+    var to = +yr.value;
+    if (Math.abs(to - yrLast) > 0.3 && !reduce) {
+      var from = yrLast, t0 = performance.now(), DUR = 220;
+      yr.value = from;
+      (function step(now) {
+        var k = Math.min(1, (now - t0) / DUR); k = 1 - Math.pow(1 - k, 3);
+        yr.value = from + (to - from) * k; scrub();
+        if (k < 1) yrAnim = requestAnimationFrame(step);
+      })(t0);
+    } else scrub();
+  });
+
+  // ---------- 五张纸条 ----------
+  var cardBox = document.getElementById('cards'), cardBtns = [];
+  types.forEach(function (t, i) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'card';
+    b.innerHTML = '<span class="nm"></span><span class="ds"></span>';
+    b.querySelector('.nm').textContent = t.zh; b.querySelector('.ds').textContent = t.desc;
+    b.addEventListener('click', function () { select(i); });
+    cardBox.appendChild(b); cardBtns.push(b);
+  });
+
+  var introP = document.getElementById('introP'), introBox = introP.parentNode;
+  function pulse(node) { node.classList.remove('swap'); void node.offsetWidth; node.classList.add('swap'); }
+  // 当前展示哪一项：悬停的优先，没有悬停就是选中的那一项
+  function view(animate) {
+    var idx = hover >= 0 ? hover : sel;
+    items.forEach(function (c, k) { c.g.classList.toggle('on', k === idx); });
+    introP.textContent = types[idx].intro;
+    if (animate) pulse(introBox);
+  }
+  function select(i) {
+    sel = i;
+    cardBtns.forEach(function (b, k) { b.setAttribute('aria-pressed', k === sel ? 'true' : 'false'); });
+    view(true); placeAnn();
+  }
+
+  // 给介绍那一段预留“五段里最高的那一段”的高度：悬停、切换时，下面不再跳
+  function reservePanel() {
+    introP.style.minHeight = '0px';
+    var max = 0;
+    types.forEach(function (t) { introP.textContent = t.intro; max = Math.max(max, introP.offsetHeight); });
+    introP.textContent = types[hover >= 0 ? hover : sel].intro;
+    introP.style.minHeight = max + 'px';
+  }
+
+  // ---------- 保存 / 重置 ----------
+  function differs(a, b) { return a.some(function (v, i) { return v !== b[i]; }); }
+  function refreshBtn() {
+    var btn = document.getElementById('reset');
+    if (justSaved) { btn.textContent = '已保存 ✓'; btn.classList.remove('primary'); btn.disabled = true; return; }
+    if (differs(vals, saved[cur])) { btn.textContent = '保存'; btn.classList.add('primary'); btn.disabled = false; }   // 拖过但还没确认
+    else { btn.textContent = '重置'; btn.classList.remove('primary'); btn.disabled = !differs(vals, orig[cur]); }      // 没有待保存的改动
+  }
+  document.getElementById('reset').addEventListener('click', function () {
+    if (differs(vals, saved[cur])) {                     // 保存：以最终拖到的位置为准
+      saved[cur] = vals.slice();
+      justSaved = true; refreshBtn();
+      clearTimeout(savedTimer);
+      savedTimer = setTimeout(function () { justSaved = false; refreshBtn(); }, 1100);
+    } else {                                             // 重置：回到默认
+      vals = eras[cur].v = orig[cur].slice(); saved[cur] = orig[cur].slice(); tweenTo(vals); refreshBtn();
+    }
+  });
+
+  // ---------- 拖动圆点，改这一项的高低 ----------
+  var dragI = -1;
+  function svgY(ev) {
+    var pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse()).y;
+  }
+  function setVal(i, v) {
+    v = Math.max(0, Math.min(100, Math.round(v)));
+    vals[i] = v;
+    cancelAnimationFrame(raf);
+    shown = vals.slice();
+    justSaved = false; clearTimeout(savedTimer);        // 又改了：按钮不能还停在“已保存 ✓”
+    hintGone = true;
+    draw(); refreshBtn();
+  }
+  items.forEach(function (it, i) {
+    it.grab.addEventListener('pointerdown', function (ev) {
+      ev.preventDefault(); dragI = i;
+      if (+yr.value !== cur) { yr.value = cur; tweenTo(vals); }   // 滑块停在两个年份之间时，先靠到最近的年份再编辑
+      it.grab.setPointerCapture(ev.pointerId); it.g.classList.add('drag'); select(i);
+    });
+    it.grab.addEventListener('pointermove', function (ev) { if (dragI === i) setVal(i, (BASE - svgY(ev)) / H * 100); });
+    var end = function () { if (dragI !== i) return; dragI = -1; it.g.classList.remove('drag'); };
+    it.grab.addEventListener('pointerup', end);
+    it.grab.addEventListener('pointercancel', end);
+  });
+  items.forEach(function (c, i) {
+    c.g.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') { hover = i; view(false); } });
+    c.g.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hover = -1; view(false); } });
+    c.g.addEventListener('focus', function () { hover = i; view(false); });
+    c.g.addEventListener('blur', function () { hover = -1; view(false); });
+    c.g.addEventListener('click', function () { select(i); });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.target.closest && e.target.closest('input,textarea')) return;
+    var colEl = e.target.closest && e.target.closest('.col');
+    // 焦点在某一列上时，↑↓ 微调这一项的高低（Shift 一次调 10）
+    if (colEl && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+      var idx = items.findIndex(function (it) { return it.g === colEl; });
+      select(idx);
+      setVal(idx, vals[idx] + (e.key === 'ArrowUp' ? 1 : -1) * (e.shiftKey ? 10 : 2));
+      return;
+    }
+    // ←→ 在五种思维方式之间切换
+    if (e.key === 'ArrowRight') select(Math.min(types.length - 1, sel + 1));
+    if (e.key === 'ArrowLeft') select(Math.max(0, sel - 1));
+  });
+
+  yl.children[0].classList.add('on');
+  draw();
+  select(0);
+  refreshBtn();
+  reservePanel();
+  // 字体到位、窗口改变后字宽会变，重新量一次
+  if (document.fonts) { document.fonts.ready.then(reservePanel); document.fonts.addEventListener('loadingdone', reservePanel); }
+  var rsz; window.addEventListener('resize', function () { clearTimeout(rsz); rsz = setTimeout(reservePanel, 150); });
+})();
+</script>
+</body>
+</html>
