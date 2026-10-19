@@ -374,7 +374,7 @@
   function differs(a, b) { return a.some(function (v, i) { return v !== b[i]; }); }
   function refreshBtn() {
     var btn = document.getElementById('reset');
-    if (justSaved) { btn.textContent = '已保存 ✓'; btn.classList.remove('primary'); btn.disabled = true; return; }
+    if (justSaved) { btn.textContent = '已保存'; btn.classList.remove('primary'); btn.disabled = true; return; }
     if (differs(vals, saved[cur])) { btn.textContent = '保存'; btn.classList.add('primary'); btn.disabled = false; }   // 拖过但还没确认
     else { btn.textContent = '重置'; btn.classList.remove('primary'); btn.disabled = !differs(vals, orig[cur]); }      // 没有待保存的改动
   }
@@ -400,7 +400,7 @@
     vals[i] = v;
     cancelAnimationFrame(raf);
     shown = vals.slice();
-    justSaved = false; clearTimeout(savedTimer);        // 又改了：按钮不能还停在“已保存 ✓”
+    justSaved = false; clearTimeout(savedTimer);        // 又改了：按钮不能还停在“已保存”
     hintGone = true;
     draw(); refreshBtn();
   }
